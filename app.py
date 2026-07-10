@@ -108,4 +108,4 @@ if st.button("⚡ LANCER L'ANALYSE VIP"):
     # Test Extérieur
     if p_2 > (1 / cote_2):
         roi = (p_2 * cote_2) - 1
-        st.success(f"🎯 **VALUE : Victoire 
+        st.success(f"🎯 **VALUE : Victoire  extérieur **")
