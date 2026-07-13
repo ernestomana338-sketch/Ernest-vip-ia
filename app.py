@@ -137,4 +137,4 @@ if saisie_equipe:
         st.markdown("</div>", unsafe_allowed_html=True)
         
     else:
-        st.error("❌ Aucun match en
+    st.error("❌ Aucun match trouvé
