@@ -11,9 +11,9 @@ st.markdown("""
     .vip-title { text-align: center; color: #FFD700; font-family: 'Arial Black', sans-serif; font-size: 38px; }
     .card-vip { background-color: #0f172a; border: 1px solid #FFD700; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
     </style>
-""", unsafe_allowed_html=True)
+""", unsafe_allow_html=True)
 
-st.markdown("<h1 class='vip-title'>👑 TITAN QUANTUM FOOT</h1>", unsafe_allowed_html=True)
+st.markdown("<h1 class='vip-title'>👑 TITAN QUANTUM FOOT</h1>", unsafe_allow_html=True)
 
 # Remplacez par votre clé API obtenue sur API-Football
 API_KEY = "VOTRE_CLE_API_ICI" 
@@ -60,13 +60,14 @@ if saisie_equipe:
         p_1, p_X, p_2, matrice_scores = Executer_Loi_Poisson_VIP(1.4, 1.1)
         max_idx = np.unravel_index(np.argmax(matrice_scores), matrice_scores.shape)
         
-        st.markdown("<div class='card-vip'>", unsafe_allowed_html=True)
+        st.markdown("<div class='card-vip'>", unsafe_allow_html=True)
         st.subheader(f"🏟️ {league_name} : {eq_dom_name} vs {eq_ext_name}")
         c1, c2, c3 = st.columns(3)
         c1.metric("Victoire Domicile", f"{p_1:.2f} %")
         c2.metric("Match Nul", f"{p_X:.2f} %")
         c3.metric("Victoire Extérieur", f"{p_2:.2f} %")
         st.markdown(f"📊 **Score Exact Optimal** : {max_idx} - {max_idx}", unsafe_allowed_html=True)
-        st.markdown("</div>", unsafe_allowed_html=True)
+        st.markdown("</div>" , unsafe_allow_html=True)
+            
     else:
         st.error("❌ Aucun match en cours trouvé.")
