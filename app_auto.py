@@ -21,7 +21,7 @@ st.markdown("""
 st.markdown("<h1 class='vip-title'>👑 TITAN QUANTUM FOOT - VERSION VIP PREMIUM</h1>", unsafe_allow_html=True)
 
 # CONFIGURATION API (Remplacez par votre clé)
-API_KEY = "VOTRE_CLE_API_ICI"
+API_KEY = "94fa330885215e500b135dd2e77486a8
 BASE_URL = "https://api-sports.io"
 HEADERS = {
     'x-rapidapi-host': 'v3.football.api-sports.io',
