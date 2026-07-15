@@ -30,7 +30,6 @@ st.markdown("<p class='vip-subtitle'>ALGORITHME DE FILTRAGE CHIRURGICAL NO-BET &
 
 # 2. CONFIGURATION DE L'API BIG DATA AVEC PROTECTION MOBILE TOTAL
 BASE_URL = "https://api-sports.io"
-
 if "api_football" in st.secrets and "key" in st.secrets["api_football"]:
     API_KEY = st.secrets["api_football"]["key"]
 else:
@@ -56,9 +55,9 @@ def extraire_donnees_api(endpoint, params=None):
 def chercher_match_mondial(nom_equipe):
     if not nom_equipe:
         return None
-    aujourdhui = datetime.now().strftime('%Y-%m-%d')
     
-    # Scan mondial complet en temps réel
+    # Capture tous les matchs de la journée (passés, en cours et à venir)
+    aujourdhui = datetime.now().strftime('%Y-%m-%d')
     matchs = extraire_donnees_api("fixtures", params={"date": aujourdhui})
     recherche = nom_equipe.strip().lower()
     
