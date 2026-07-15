@@ -30,11 +30,11 @@ st.markdown("<p class='vip-subtitle'>ALGORITHME DE FILTRAGE CHIRURGICAL NO-BET &
 
 # 2. CONFIGURATION DE L'API BIG DATA AVEC PROTECTION MOBILE TOTAL
 BASE_URL = "https://api-sports.io"
+
 if "api_football" in st.secrets and "key" in st.secrets["api_football"]:
     API_KEY = st.secrets["api_football"]["key"]
 else:
     API_KEY = "9f41a330885215e500b3135dd2e77486a8"
-    
 
 HEADERS = {
     'x-rapidapi-host': 'v3.football.api-sports.io',
@@ -55,12 +55,9 @@ def extraire_donnees_api(endpoint, params=None):
 def chercher_match_mondial(nom_equipe):
     if not nom_equipe:
         return None
-    
-    # Capture tous les matchs de la journée (passés, en cours et à venir)
     aujourdhui = datetime.now().strftime('%Y-%m-%d')
     matchs = extraire_donnees_api("fixtures", params={"date": aujourdhui})
     recherche = nom_equipe.strip().lower()
-    
     for m in matchs:
         eq_dom = m["teams"]["home"]["name"].lower()
         eq_ext = m["teams"]["away"]["name"].lower()
@@ -71,65 +68,65 @@ def chercher_match_mondial(nom_equipe):
 # 4. ANALYSE STATISTIQUE ET MATHÉMATIQUE AVANCÉE
 def analyser_parametres_vip(league_id, team_home_id, team_away_id):
     saison_actuelle = datetime.now().year
-    
     lambda_home = 1.55
     lambda_away = 1.20
-    points_home_6 = 9
-    points_away_6 = 9
-    
     stats_home = extraire_donnees_api("teams/statistics", params={"league": league_id, "season": saison_actuelle, "team": team_home_id})
     stats_away = extraire_donnees_api("teams/statistics", params={"league": league_id, "season": saison_actuelle, "team": team_away_id})
-    
     if stats_home and stats_away:
         try:
             home_goals_for = float(stats_home.get("goals", {}).get("for", {}).get("average", {}).get("home", 1.6))
             away_goals_against = float(stats_away.get("goals", {}).get("against", {}).get("average", {}).get("away", 1.3))
-            
             away_goals_for = float(stats_away.get("goals", {}).get("for", {}).get("average", {}).get("away", 1.2))
             home_goals_against = float(stats_home.get("goals", {}).get("against", {}).get("average", {}).get("home", 1.4))
-            
             lambda_home = (home_goals_for + away_goals_against) / 2
             lambda_away = (away_goals_for + home_goals_against) / 2
-            
             forme_home = stats_home.get("form", "DDWWDD")[-6:]
             forme_away = stats_away.get("form", "DDWWDD")[-6:]
-            
             points_home_6 = sum(3 if char == 'W' else 1 if char == 'D' else 0 for char in forme_home)
             points_away_6 = sum(3 if char == 'W' else 1 if char == 'D' else 0 for char in forme_away)
-            
-            # Ajustement de forme (Secret des meilleures applications VIP)
             lambda_home *= (1 + (points_home_6 - points_away_6) * 0.04)
             lambda_away *= (1 + (points_away_6 - points_home_6) * 0.04)
-            
         except (IndexError, TypeError, ValueError):
             pass
-            
     return max(0.1, lambda_home), max(0.1, lambda_away)
 
 def generer_probabilites_vip(lambda_home, lambda_away):
     max_buts = 7
     matrice = np.zeros((max_buts, max_buts))
-    
     for i in range(max_buts):
         for j in range(max_buts):
             matrice[i, j] = stats.poisson.pmf(i, lambda_home) * stats.poisson.pmf(j, lambda_away)
-            
     p_home = float(np.sum(np.tril(matrice, -1)))
     p_nul = float(np.sum(np.diagonal(matrice)))
     p_away = float(np.sum(np.triu(matrice, 1)))
-    
     p_btts = float(np.sum(matrice[1:, 1:])) 
     p_over_25 = float(np.sum([matrice[i, j] for i in range(max_buts) for j in range(max_buts) if i + j > 2]))
     p_under_35 = float(np.sum([matrice[i, j] for i in range(max_buts) for j in range(max_buts) if i + j < 4]))
-    
     idx_max = np.unravel_index(np.argmax(matrice), matrice.shape)
-    score_exact_txt = f"{idx_max[0]} - {idx_max[1]}"
+    score_exact_txt = f"{idx_max} - {idx_max}"
     prob_score_exact = float(matrice[idx_max])
-    
     return p_home, p_nul, p_away, p_btts, p_over_25, p_under_35, score_exact_txt, prob_score_exact
 
-# 5. CODE PRINCIPAL ET ENTRÉE UTILISATEUR
-nom_recherche = st.text_input("💎 ENTRER UNE ÉQUIPE DU JOUR (Scan Mondial : Europe, Afrique, Amériques, Asie) :", "")
+# 5. INTERFACE COMPACTE VIP SANS CLAVIER (Boutons directs pour mobile)
+st.markdown("### 💎 SÉLECTIONNEZ VOTRE MATCH DU JOUR")
+
+options_matchs = [
+    "Choisir un match...", 
+    "England (Angleterre)", 
+    "Argentina (Argentine)", 
+    "France", 
+    "Spain (Espagne)", 
+    "Levski"
+]
+
+choix_selection = st.selectbox("Sélectionnez l'équipe à analyser avec l'IA :", options_matchs)
+
+nom_recherche = ""
+if "England" in choix_selection: nom_recherche = "England"
+elif "Argentina" in choix_selection: nom_recherche = "Argentina"
+elif "France" in choix_selection: nom_recherche = "France"
+elif "Spain" in choix_selection: nom_recherche = "Spain"
+elif "Levski" in choix_selection: nom_recherche = "Levski"
 
 if nom_recherche:
     with st.spinner("🚀 Analyse algorithmique et filtrage en cours..."):
@@ -148,26 +145,21 @@ if nom_recherche:
                 </div>
             """, unsafe_allow_html=True)
             
-            # Calculs algorithmiques
             l_home, l_away = analyser_parametres_vip(league_id, t_home["id"], t_away["id"])
             p_home, p_nul, p_away, p_btts, p_over_25, p_under_35, score_exact, p_score = generer_probabilites_vip(l_home, l_away)
             
-            # --- CALCUL DE L'INDICE DE CONFIANCE CRITIQUE POUR LE FILTRAGE ---
-            # On cherche si une probabilité majeure passe au-dessus de 62% pour sécuriser le 8/10 de réussite
             meilleure_prob = max(p_home, p_away, p_btts, p_over_25, p_under_35)
             
-            # --- APPLICATION DU FILTRE CHIRURGICAL "NO-BET" PRO ---
             if meilleure_prob < 0.62:
                 st.markdown(f"""
                     <div class='filter-nobet'>
                         ⚠️ MATCH ÉLIMINÉ : PAS DE PRONOSTIC VIP POUR CE MATCH<br>
                         <span style='font-size: 13px; color: #ffbb66; font-weight: normal;'>
-                        Indice de confiance insuffisant ({meilleure_prob:.1%}). Ce match comporte trop de variance ou de pièges. L'algorithme refuse de risquer le capital des membres VIP.
+                        Indice de confiance insuffisant ({meilleure_prob:.1%}). Ce match comporte trop de variance. L'algorithme refuse de risquer le capital des membres VIP.
                         </span>
                     </div>
                 """, unsafe_allow_html=True)
             else:
-                # Le match passe le filtre, on génère le coupon de maître
                 st.markdown(f"""
                     <div class='filter-passed'>
                         👑 ACCÈS VIP ACCORDÉ : SIGNAL ANALYTIQUE ENCLENCHÉ<br>
@@ -177,8 +169,10 @@ if nom_recherche:
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # --- AFFICHAGE DES PRÉDICTIONS POUR LES MATCHS SÉLECTIONNÉS ---
                 st.markdown("### 📊 Distribution des Probabilités (1X2)")
                 col1, col2, col3 = st.columns(3)
                 col1.markdown(f"<div class='metric-box'><div class='metric-label'>Victoire {t_home['name']}</div><div class='metric-val'>{p_home:.2%}</div></div>", unsafe_allow_html=True)
                 col2.markdown(f"<div class='metric-box'><div class='metric-label'>Match Nul (X)</div><div class='metric-val'>{p_nul:.2%}</div></div>", unsafe_allow_html=True)
+                col3.markdown(f"<div class='metric-box'><div class='metric-label'>Victoire {t_away['name']}</div><div class='metric-val'>{p_away:.2%}</div></div>", unsafe_allow_html=True)
+                    
+                st.markdown("### 🎯 Marchés Annexes Détectés")
